@@ -51,14 +51,14 @@ if stn_arch == 'CNN':
 						input=x, 
 						filter=W_loc1, 
 						strides=[1, 1, 1, 1], 
-						padding='VALID'
+						padding='SAME'
 					) + b_loc1
 				)
 	loc_pool1 = tf.nn.max_pool(
 					value=loc_conv1, 
 					ksize=[1, 2 ,2 , 1], 
 					strides=[1, 2, 2, 1], 
-					padding='VALID'
+					padding='SAME'
 				)
 	filter_size=3
 	n_filters_2=16
@@ -69,14 +69,14 @@ if stn_arch == 'CNN':
 						input=loc_pool1,
 						filter=W_loc2,
 						strides=[1, 1, 1, 1],
-						padding='VALID'
+						padding='SAME'
 					) + b_loc2
 				)
 	loc_pool2 = tf.nn.max_pool(
 					value=loc_conv2,
 					ksize=[1, 2, 2, 1],
 					strides=[1, 2, 2, 1],
-					padding='VALID'
+					padding='SAME'
 				)
 	# Shape of loc_pool2 should be (batch_size, 11, 11, n_filters_2)
 	loc_pool2_flat = tf.reshape(loc_pool2, [-1, 121*n_filters_2])
@@ -119,14 +119,14 @@ if classifier_arch == 'CNN':
 						input=h_trans, 
 						filter=W_clsfr_1, 
 						strides=[1, 1, 1, 1], 
-						padding='VALID'
+						padding='SAME'
 					) + b_clsfr_1
 				)
 	clsfr_pool1 = tf.nn.max_pool(
 					value=clsfr_conv1, 
 					ksize=[1, 2 ,2 , 1], 
 					strides=[1, 2, 2, 1], 
-					padding='VALID'
+					padding='SAME'
 				)
 	filter_size=3
 	n_filters_2=32
@@ -137,14 +137,14 @@ if classifier_arch == 'CNN':
 						input=clsfr_pool1,
 						filter=W_clsfr_2,
 						strides=[1, 1, 1, 1],
-						padding='VALID'
+						padding='SAME'
 					) + b_clsfr_2
 				)
 	clsfr_pool2 = tf.nn.max_pool(
 					value=clsfr_conv2,
 					ksize=[1, 2, 2, 1],
 					strides=[1, 2, 2, 1],
-					padding='VALID'
+					padding='SAME'
 				)
 	# Shape of clsfr_pool2 should be (batch_size, 11, 11, n_filters_2)
 	clsfr_pool2_flat = tf.reshape(clsfr_pool2, [-1, 121*n_filters_2])
@@ -269,8 +269,4 @@ for epoch_i in range(n_epochs):
 						))
     	print('Accuracy (%d): %s' % (epoch_i, acc))
 
-
-
-
-	
 
