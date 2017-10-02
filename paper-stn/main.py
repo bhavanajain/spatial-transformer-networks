@@ -209,5 +209,68 @@ if ARGS.PRETRAINED:
 else:
 	optimizer = opt.minimize(cross_entropy + reg_penalty)
 
+correct_prediction = tf.equal(tf.argmax(y_logits, 1), tf.argmax(y, 1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
+
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+
+if ARGS.PRETRAINED:
+	restore_layers = {}
+	clsfr_params = clsfr_weights + clsfr_biases
+	for param in clsfr_params:
+		restore_layers[str(param)] = param
+	saver = tf.train.Saver(restore_layers)
+
+iter_per_epoch=100
+n_epochs=ARGS.N_EPOCHS
+
+indices=np.linspace(0, 10000-1, iter_per_epoch)
+indices=indices.astype('int')
+
+for epoch_i in range(n_epochs):
+	for iter_i in range(iter_per_epoch-1):
+		batch_xs=X_train[indices[iter_i]:indices[iter_i+1]]
+		batch_ys=Y_train[indices[iter_i]:indices[iter_i+1]]
+
+		if iter_i%10 == 0:
+			loss = sess.run(
+								cross_entropy,
+								feed_dict = {
+								x:batch_xs,
+								y:batch_ys
+								}
+							)
+            print('Iteration: ' + str(iter_i) + ' Loss: ' + str(loss))
+
+		sess.run(
+					optimizer, 
+					feed_dict={
+						x:batch_xs,
+						y:batch_ys
+					}
+				)
+		gen_images = sess.run(
+								h_trans, 
+								feed_dict={
+									x:batch_xs,
+									y:batch_ys
+								}
+							)
+		gen_images = np.squeeze(gen_images)
+		demo_simple_grid(gen_images[:25], figname=samples_dir+"/epoch-%03d.png" %epoch_i)
+
+		acc = str(sess.run(
+							accuracy, 
+							feed_dict={
+								x:X_valid,
+								y:Y_valid
+							}
+						))
+    	print('Accuracy (%d): %s' % (epoch_i, acc))
+
+
+
+
 	
 
