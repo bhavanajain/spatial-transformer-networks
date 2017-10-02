@@ -18,8 +18,7 @@ sys.stdout = open(log_file, 'w')
 for arg_name, arg_value in vars(ARGS).items():
 	print (str(arg_name) + " = " + str(arg_value))
 
-model_path = "blah"
-model_name = "blah"
+model_path = ARGS.MODEL_PATH
 
 rts_mnist = np.load(ARGS.DATA_FOLDER + 'RTS_mnist.npz')
 X, y = rts_mnist['distorted_x'], rts_mnist['labels']
@@ -228,7 +227,7 @@ if ARGS.PRETRAINED:
 	for param in clsfr_params:
 		restore_layers[str(param)] = param
 	saver = tf.train.Saver(restore_layers)
-	saver.restore(sess, model_path + model_name)
+	saver.restore(sess, model_path)
 
 iter_per_epoch=100
 n_epochs=ARGS.N_EPOCHS
