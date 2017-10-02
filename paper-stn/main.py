@@ -18,18 +18,22 @@ import sys
 logfile = ARGS.LOGFILE
 sys.stdout = open(log_file, 'w')
 
+model_path = "blah"
+model_name = "blah"
+
 rts_mnist = np.load(ARGS.DATA_FOLDER + 'RTS_mnist.npz')
 X, y = rts_mnist['distorted_x'], rts_mnist['labels']
 
 stn_arch = ARGS.STN_ARCH
 classifier_arch = ARGS.CLASSIFIER_ARCH
 
-if stn_arch == 'CNN':
-	X = X.reshape(X.shape + (1, ))
-	x = tf.placeholder(tf.float32, [None, 42, 42, 1])
-else:
+if stn_arch == 'FCN':
 	X = X.reshape(X.shape[0], 42 * 42)
 	x = tf.placeholder(tf.float32, [None, 42*42])
+else:
+	X = X.reshape(X.shape + (1, ))
+	x = tf.placeholder(tf.float32, [None, 42, 42, 1])
+	
 
 y = tf.placeholder(tf.float32, [None, 10])
 
@@ -91,7 +95,7 @@ if stn_arch == 'CNN':
 	stn_weights=[W_loc1, W_loc2, W_loc3, W_loc4]
 	stn_biases=[b_loc1, b_loc2, b_loc3, b_loc4]
 
-else:
+elif stn_arch == 'FCN':
 	# STN architecture is fully connected, 1764 -> 1024 -> 256 -> 6
 	W_loc1 = weight_variable([42*42, 1024], name='W_loc1')
 	b_loc1 = bias_variable([1024], name='b_loc1')
@@ -108,6 +112,9 @@ else:
 	h_trans = transformer(x_tensor, h_loc3, out_size)
 	stn_weights=[W_loc1, W_loc2, W_loc3]
 	stn_biases=[b_loc1, b_loc2, b_loc3]
+
+else:
+	h_trans=x
 
 if classifier_arch == 'CNN':
 	filter_size=3
@@ -222,6 +229,8 @@ if ARGS.PRETRAINED:
 		restore_layers[str(param)] = param
 	saver = tf.train.Saver(restore_layers)
 
+saver.restore(sess, model_path + model_name)
+
 iter_per_epoch=100
 n_epochs=ARGS.N_EPOCHS
 
@@ -250,23 +259,23 @@ for epoch_i in range(n_epochs):
 						y:batch_ys
 					}
 				)
-		gen_images = sess.run(
-								h_trans, 
-								feed_dict={
-									x:batch_xs,
-									y:batch_ys
-								}
-							)
-		gen_images = np.squeeze(gen_images)
-		demo_simple_grid(gen_images[:25], figname=samples_dir+"/epoch-%03d.png" %epoch_i)
-
-		acc = str(sess.run(
-							accuracy, 
+	gen_images = sess.run(
+							h_trans, 
 							feed_dict={
-								x:X_valid,
-								y:Y_valid
+								x:batch_xs,
+								y:batch_ys
 							}
-						))
-    	print('Accuracy (%d): %s' % (epoch_i, acc))
+						)
+	gen_images = np.squeeze(gen_images)
+	demo_simple_grid(gen_images[:25], figname=samples_dir+"/epoch-%03d.png" %epoch_i)
+
+	acc = str(sess.run(
+						accuracy, 
+						feed_dict={
+							x:X_valid,
+							y:Y_valid
+						}
+					))
+	print('Accuracy (%d): %s' % (epoch_i, acc))
 
 
