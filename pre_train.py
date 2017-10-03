@@ -99,7 +99,7 @@ elif classifier_arch == 'FCN':
     W_clsfr_1 = weight_variable([42*42, 1024], name='W_clsfr_1')
     b_clsfr_1 = bias_variable([1024], name='b_clsfr_1')
     h_clsfr_1 = tf.nn.relu(
-                    tf.matmul(h_trans_flat, x) + b_clsfr_1
+                    tf.matmul(x, W_clsfr_1) + b_clsfr_1
                 )
     W_clsfr_2 = weight_variable([1024, 256], name='W_clsfr_2')
     b_clsfr_2 = bias_variable([256], name='b_clsfr_2')
@@ -113,56 +113,6 @@ elif classifier_arch == 'FCN':
                 )
     clsfr_weights=[W_clsfr_1, W_clsfr_2, W_clsfr_3]
     clsfr_biases=[b_clsfr_1, b_clsfr_2, b_clsfr_3]
-    filter_size=3
-    n_filters_1=16
-    W_clsfr_1 = weight_variable([filter_size, filter_size, 1, n_filters_1], name='W_clsfr_1')
-    b_clsfr_1 = bias_variable([n_filters_1], name='b_clsfr_1')
-    clsfr_conv1 = tf.nn.relu(
-                    tf.nn.conv2d(
-                        input=h_trans, 
-                        filter=W_clsfr_1, 
-                        strides=[1, 1, 1, 1], 
-                        padding='SAME'
-                    ) + b_clsfr_1
-                )
-    clsfr_pool1 = tf.nn.max_pool(
-                    value=clsfr_conv1, 
-                    ksize=[1, 2 ,2 , 1], 
-                    strides=[1, 2, 2, 1], 
-                    padding='SAME'
-                )
-    filter_size=3
-    n_filters_2=32
-    W_clsfr_2 = weight_variable([filter_size, filter_size, n_filters_1, n_filters_2], name='W_clsfr_2')
-    b_clsfr_2 = bias_variable([n_filters_2], name='b_clsfr_2')
-    clsfr_conv2 = tf.nn.relu(
-                    tf.nn.conv2d(
-                        input=clsfr_pool1,
-                        filter=W_clsfr_2,
-                        strides=[1, 1, 1, 1],
-                        padding='SAME'
-                    ) + b_clsfr_2
-                )
-    clsfr_pool2 = tf.nn.max_pool(
-                    value=clsfr_conv2,
-                    ksize=[1, 2, 2, 1],
-                    strides=[1, 2, 2, 1],
-                    padding='SAME'
-                )
-    # Shape of clsfr_pool2 should be (batch_size, 11, 11, n_filters_2)
-    clsfr_pool2_flat = tf.reshape(clsfr_pool2, [-1, 121*n_filters_2])
-    W_clsfr_3 = weight_variable([121*n_filters_2, 1024], name='W_clsfr_3')
-    b_clsfr_3 = bias_variable([1024], name='b_clsfr_3')
-    h_clsfr_1 = tf.nn.relu(
-                    tf.matmul(clsfr_pool2_flat, W_clsfr_3) 
-                    + b_clsfr_3
-                )
-    W_clsfr_4 = weight_variable([1024, 10], name='W_clsfr_4')
-    b_clsfr_4 = bias_variable([10], name='b_clsfr_4')
-    y_logits = tf.matmul(h_clsfr_1, W_clsfr_4) + b_clsfr_4
-
-    clsfr_weights=[W_clsfr_1, W_clsfr_2, W_clsfr_3, W_clsfr_4]
-    clsfr_biases=[b_clsfr_1, b_clsfr_2, b_clsfr_3, b_clsfr_4]
 
 beta = ARGS.BETA
 if ARGS.REG == 'L1':
