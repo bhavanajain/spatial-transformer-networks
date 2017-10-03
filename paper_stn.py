@@ -225,7 +225,7 @@ if ARGS.PRETRAINED:
     restore_layers = {}
     clsfr_params = clsfr_weights + clsfr_biases
     for param in clsfr_params:
-        restore_layers[str(param)] = param
+        restore_layers[param.name] = param
     saver = tf.train.Saver(restore_layers)
     saver.restore(sess, model_path)
 
