@@ -218,7 +218,8 @@ else:
 correct_prediction = tf.equal(tf.argmax(y_logits, 1), tf.argmax(y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
 
-sess = tf.Session()
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=ARGS.GPU_FRAC)
+sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 sess.run(tf.global_variables_initializer())
 
 if ARGS.PRETRAINED:

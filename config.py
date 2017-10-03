@@ -39,6 +39,13 @@ def parse_arguments():
 	parser.add_argument('--model_save', dest='MODEL_SAVE',
 							action='store', default='all', choices=['best', 'all'])
                                             
+        def restricted_float(x):
+            x = float(x)
+            if x < 0.0 or x > 1.0:
+                raise argparse.ArgumentTypeError("%r not in range [0.0, 1.0]" % x)
+
+	parser.add_argument('--gpu_fraction', dest='GPU_FRAC',
+							action='store', type=restricted_float, default=1)
 
 	args = parser.parse_args()
 	return args
