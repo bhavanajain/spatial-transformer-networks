@@ -1,0 +1,4 @@
+numpy
+# if you want to run on gpu, replace the following line with tensorflow-gpu
+tensorflow
+matplotlib
