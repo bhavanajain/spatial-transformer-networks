@@ -95,7 +95,7 @@ if classifier_arch == 'CNN':
     clsfr_weights=[W_clsfr_1, W_clsfr_2, W_clsfr_3, W_clsfr_4]
     clsfr_biases=[b_clsfr_1, b_clsfr_2, b_clsfr_3, b_clsfr_4]
 
-else:
+elif classifier_arch == 'FCN':
     W_clsfr_1 = weight_variable([42*42, 1024], name='W_clsfr_1')
     b_clsfr_1 = bias_variable([1024], name='b_clsfr_1')
     h_clsfr_1 = tf.nn.relu(
@@ -164,25 +164,6 @@ else:
     clsfr_weights=[W_clsfr_1, W_clsfr_2, W_clsfr_3, W_clsfr_4]
     clsfr_biases=[b_clsfr_1, b_clsfr_2, b_clsfr_3, b_clsfr_4]
 
-else:
-    h_trans_flat = tf.reshape(h_trans, [-1, 42*42])
-    W_clsfr_1 = weight_variable([42*42, 1024], name='W_clsfr_1')
-    b_clsfr_1 = bias_variable([1024], name='b_clsfr_1')
-    h_clsfr_1 = tf.nn.relu(
-                    tf.matmul(h_trans_flat, W_clsfr_1) + b_clsfr_1
-                )
-    W_clsfr_2 = weight_variable([1024, 256], name='W_clsfr_2')
-    b_clsfr_2 = bias_variable([256], name='b_clsfr_2')
-    h_clsfr_2 = tf.nn.relu(
-                    tf.matmul(h_clsfr_1, W_clsfr_2) + b_clsfr_2
-                )
-    W_clsfr_3 = weight_variable([256, 10], name='W_clsfr_3')
-    b_clsfr_3 = bias_variable([10], name='b_clsfr_3')
-    y_logits = tf.matmul(h_clsfr_2, W_clsfr_3) + b_clsfr_3
-
-    clsfr_weights=[W_clsfr_1, W_clsfr_2, W_clsfr_3]
-    clsfr_biases=[b_clsfr_1, b_clsfr_2, b_clsfr_3]
-
 beta = ARGS.BETA
 if ARGS.REG == 'L1':
     regularizer = tf.contrib.layers.l1_regularizer(scale=beta, scope=None)
@@ -206,13 +187,17 @@ store_layers = {}
 clsfr_params = clsfr_weights + clsfr_biases
 for param in clsfr_params:
     store_layers[param.name] = param
-saver = tf.train.Saver(store_layers)
+saver = tf.train.Saver(store_layers, max_to_keep=None)
 
 iter_per_epoch=100
 n_epochs=ARGS.N_EPOCHS
 
 indices=np.linspace(0, 10000-1, iter_per_epoch)
 indices=indices.astype('int')
+
+model_save = ARGS.MODEL_SAVE
+if model_save == 'best':
+    prev_acc = 0
 
 for epoch_i in range(n_epochs):
     for iter_i in range(iter_per_epoch-1):
@@ -237,11 +222,17 @@ for epoch_i in range(n_epochs):
                     }
                 )
 
-    acc = str(sess.run(
+    acc = sess.run(
                         accuracy, 
                         feed_dict={
                             x:X_valid,
                             y:Y_valid
                         }
-                    ))
+                    )
+    if model_save == 'all':
+        saver.save(sess, model_path + "epoch-%03d-%s" % (epoch_i, str(acc)))
+    elif model_save == 'best':
+        if acc > prev_acc:
+            saver.save(sess, model_path + "epoch-%03d-%s" % (epoch_i, str(acc)))
+            prev_acc = acc
     print('Accuracy (%d): %s' % (epoch_i, acc))
