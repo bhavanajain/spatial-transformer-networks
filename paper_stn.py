@@ -114,6 +114,8 @@ elif stn_arch == 'FCN':
 
 else:
     h_trans=x
+    stn_weights = []
+    stn_biases = []
 
 if classifier_arch == 'CNN':
     filter_size=3
@@ -183,9 +185,7 @@ else:
                 )
     W_clsfr_3 = weight_variable([256, 10], name='W_clsfr_3')
     b_clsfr_3 = bias_variable([10], name='b_clsfr_3')
-    y_logits  = tf.nn.relu(
-                    tf.matmul(h_clsfr_2, W_clsfr_3) + b_clsfr_3
-                )
+    y_logits  = tf.matmul(h_clsfr_2, W_clsfr_3) + b_clsfr_3
     clsfr_weights=[W_clsfr_1, W_clsfr_2, W_clsfr_3]
     clsfr_biases=[b_clsfr_1, b_clsfr_2, b_clsfr_3]
 
