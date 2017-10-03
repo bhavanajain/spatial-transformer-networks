@@ -36,6 +36,10 @@ def parse_arguments():
 	parser.add_argument('--logfile', '-lf', dest='LOGFILE',
 							action='store', default='./logs.txt')
 
+	parser.add_argument('--model_save', dest='MODEL_SAVE',
+							action='store', default='all', choices=['best', 'all'])
+                                            
+
 	args = parser.parse_args()
 	return args
 
