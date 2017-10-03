@@ -20,8 +20,8 @@ for arg_name, arg_value in vars(ARGS).items():
 
 model_path = ARGS.MODEL_PATH
 
-rts_mnist = np.load(ARGS.DATA_FOLDER + 'RTS_mnist.npz')
-X, y = rts_mnist['distorted_x'], rts_mnist['labels']
+rts_mnist = np.load(ARGS.DATA_DIR + 'RTS_mnist.npz')
+X, labels = rts_mnist['distorted_x'], rts_mnist['labels']
 
 stn_arch = ARGS.STN_ARCH
 classifier_arch = ARGS.CLASSIFIER_ARCH
@@ -37,9 +37,9 @@ else:
 y = tf.placeholder(tf.float32, [None, 10])
 
 X_train = X[:10000] 
-y_train = y[:10000] 
+y_train = labels[:10000] 
 X_valid = X[10000:11000] 
-y_valid = y[10000:11000]
+y_valid = labels[10000:11000]
 
 Y_train = dense_to_one_hot(y_train, n_classes=10)
 Y_valid = dense_to_one_hot(y_valid, n_classes=10) 
@@ -164,10 +164,7 @@ if classifier_arch == 'CNN':
                 )
     W_clsfr_4 = weight_variable([1024, 10], name='W_clsfr_4')
     b_clsfr_4 = bias_variable([10], name='b_clsfr_4')
-    y_logits = tf.nn.relu(
-                    tf.matmul(h_clsfr_1, W_clsfr_4) 
-                    + b_clsfr_4
-                )
+    y_logits = tf.matmul(h_clsfr_1, W_clsfr_4) + b_clsfr_4
     clsfr_weights=[W_clsfr_1, W_clsfr_2, W_clsfr_3, W_clsfr_4]
     clsfr_biases=[b_clsfr_1, b_clsfr_2, b_clsfr_3, b_clsfr_4]
 
@@ -200,13 +197,13 @@ if ARGS.PRETRAINED:
 else:
     reg_weights=stn_weights + clsfr_weights
 
-if ARGS.reg=='None':
+if ARGS.REG=='None':
     reg_penalty=0
 else:
     reg_penalty=tf.contrib.layers.apply_regularization(regularizer, reg_weights)
  
 cross_entropy = tf.reduce_mean(
-                    tf.nn.softmax_cross_entropy_with_logits(y_logits, y)
+                    tf.nn.softmax_cross_entropy_with_logits(logits=y_logits, labels=y)
                 )
 opt = tf.train.AdamOptimizer(learning_rate=ARGS.LEARNING_RATE)
 

@@ -16,8 +16,8 @@ model_dir = ARGS.MODEL_PATH
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
 
-rts_mnist = np.load(ARGS.DATA_FOLDER + '42x42_mnist.npz')
-X, y = rts_mnist['distorted_x'], rts_mnist['labels']
+mnist = np.load(ARGS.DATA_DIR + '42x42_mnist.npz')
+X, labels = mnist['distorted_x'], mnist['labels']
 
 classifier_arch = ARGS.CLASSIFIER_ARCH
 
@@ -31,9 +31,9 @@ else:
 y = tf.placeholder(tf.float32, [None, 10])
 
 X_train = X[:10000] 
-y_train = y[:10000] 
+y_train = labels[:10000] 
 X_valid = X[10000:11000] 
-y_valid = y[10000:11000]
+y_valid = labels[10000:11000]
 
 Y_train = dense_to_one_hot(y_train, n_classes=10)
 Y_valid = dense_to_one_hot(y_valid, n_classes=10) 
@@ -171,13 +171,13 @@ elif ARGS.REG == 'L2':
     regularizer = tf.contrib.layers.l2_regularizer(scale=beta, scope=None)
 
 reg_weights = clsfr_weights
-if ARGS.reg=='None':
+if ARGS.REG=='None':
     reg_penalty = 0
 else:
     reg_penalty = tf.contrib.layers.apply_regularization(regularizer, reg_weights)
  
 cross_entropy = tf.reduce_mean(
-                    tf.nn.softmax_cross_entropy_with_logits(y_logits, y)
+                    tf.nn.softmax_cross_entropy_with_logits(logits=y_logits, labels=y)
                 )
 learning_rate = ARGS.LEARNING_RATE
 opt = tf.train.AdamOptimizer(learning_rate=learning_rate)

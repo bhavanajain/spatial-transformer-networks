@@ -78,7 +78,7 @@ def linear(x, n_units, scope=None, stddev=0.02,
         return activation(tf.matmul(x, matrix))
     
 # %%
-def weight_variable(shape):
+def weight_variable(shape, name=""):
     '''Helper function to create a weight variable initialized with
     a normal distribution
     Parameters
@@ -88,10 +88,10 @@ def weight_variable(shape):
     '''
     #initial = tf.random_normal(shape, mean=0.0, stddev=0.01)
     initial = tf.zeros(shape)
-    return tf.Variable(initial)
+    return tf.Variable(initial, name=name)
 
 # %%
-def bias_variable(shape):
+def bias_variable(shape, name=""):
     '''Helper function to create a bias variable initialized with
     a constant value.
     Parameters
@@ -100,7 +100,7 @@ def bias_variable(shape):
         Size of weight variable
     '''
     initial = tf.random_normal(shape, mean=0.0, stddev=0.01)
-    return tf.Variable(initial)
+    return tf.Variable(initial, name=name)
 
 # %% 
 def dense_to_one_hot(labels, n_classes=2):

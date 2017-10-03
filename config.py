@@ -25,7 +25,7 @@ def parse_arguments():
 							action='store', type=bool, default=False)
 
 	parser.add_argument('--model_path', '-model', dest='MODEL_PATH',
-							action='store')
+							action='store', default="./models/")
 
 	parser.add_argument('--data_dir', '-data', dest='DATA_DIR',
 							action='store', default='/home/bhvjain/stn_models/data/')
