@@ -1,5 +1,5 @@
 import tensorflow as tf
-from spatial_transformer import transformer
+from utils.spatial_transformer import transformer
 import numpy as np
 from utils.tf_utils import weight_variable, bias_variable, dense_to_one_hot
 from utils.plot_utils import demo_simple_grid
