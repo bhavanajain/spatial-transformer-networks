@@ -183,8 +183,13 @@ learning_rate = ARGS.LEARNING_RATE
 opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
 optimizer = opt.minimize(cross_entropy + reg_penalty)
 
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=ARGS.GPU_FRAC)
-sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+mem_fraction = ARGS.GPU_FRAC
+if mem_fraction == -1:
+    sess = tf.Session()
+else:
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=ARGS.GPU_FRAC)
+    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+
 sess.run(global_variables_initializer())
 
 iter_per_epoch=100

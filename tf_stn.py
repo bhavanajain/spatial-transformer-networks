@@ -131,7 +131,13 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
 
 # %% We now create a new session to actually perform the initialization the
 # variables:
-sess = tf.Session()
+mem_fraction = ARGS.GPU_FRAC
+if mem_fraction == -1:
+    sess = tf.Session()
+else:
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=ARGS.GPU_FRAC)
+    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+
 sess.run(tf.initialize_all_variables())
 
 
