@@ -183,11 +183,6 @@ learning_rate = ARGS.LEARNING_RATE
 opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
 optimizer = opt.minimize(cross_entropy + reg_penalty)
 
-store_layers = {}
-clsfr_params = clsfr_weights + clsfr_biases
-for param in clsfr_params:
-    store_layers[param.name] = param
-saver = tf.train.Saver(store_layers, max_to_keep=None)
 
 iter_per_epoch=100
 n_epochs=ARGS.N_EPOCHS
@@ -198,6 +193,17 @@ indices=indices.astype('int')
 model_save = ARGS.MODEL_SAVE
 if model_save == 'best':
     prev_acc = 0
+    # We only want to save the best model
+    max_to_keep = 1
+else:
+    # We want to save all the models
+    max_to_keep = None
+
+store_layers = {}
+clsfr_params = clsfr_weights + clsfr_biases
+for param in clsfr_params:
+    store_layers[param.name] = param
+saver = tf.train.Saver(store_layers, max_to_keep=max_to_keep)
 
 for epoch_i in range(n_epochs):
     for iter_i in range(iter_per_epoch-1):
@@ -231,8 +237,7 @@ for epoch_i in range(n_epochs):
                     )
     if model_save == 'all':
         saver.save(sess, model_path + "epoch-%03d-%s" % (epoch_i, str(acc)))
-    elif model_save == 'best':
-        if acc > prev_acc:
+    elif model_save == 'best' and acc > prev_acc:
             saver.save(sess, model_path + "epoch-%03d-%s" % (epoch_i, str(acc)))
             prev_acc = acc
     print('Accuracy (%d): %s' % (epoch_i, acc))
