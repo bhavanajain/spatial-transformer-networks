@@ -12,7 +12,7 @@ if not os.path.exists(samples_dir):
 
 import sys
 logfile = ARGS.LOGFILE
-sys.stdout = open(log_file, 'w')
+sys.stdout = open(logfile, 'w')
 
 # display parameter values
 for arg_name, arg_value in vars(ARGS).items():
@@ -85,7 +85,7 @@ if stn_arch == 'CNN':
     loc_pool2_flat = tf.reshape(loc_pool2, [-1, 121*n_filters_2])
     W_loc3 = weight_variable([121*n_filters_2, 256], name='W_loc3')
     b_loc3 = bias_variable([256], name='b_loc3')
-    h_loc1 = tf.matmul(loc_pool2_flat, W_loc3) + b_loc3
+    h_loc1 = tf.nn.relu(tf.matmul(loc_pool2_flat, W_loc3) + b_loc3)
     W_loc4 = tf.Variable(initial_value=tf.zeros([256, 6], tf.float32), name='W_loc4')
     b_loc4 = tf.Variable(initial_value=[1.0, 0.0, 0.0, 0.0, 1.0, 0.0], name='b_loc4')
     h_loc2 = tf.matmul(h_loc1, W_loc4) + b_loc4
@@ -98,10 +98,10 @@ elif stn_arch == 'FCN':
     # STN architecture is fully connected, 1764 -> 1024 -> 256 -> 6
     W_loc1 = weight_variable([42*42, 1024], name='W_loc1')
     b_loc1 = bias_variable([1024], name='b_loc1')
-    h_loc1 = tf.matmul(x, W_loc1) + b_loc1
+    h_loc1 = tf.nn.relu(tf.matmul(x, W_loc1) + b_loc1)
     W_loc2 = weight_variable([1024, 256], name='W_loc2')
     b_loc2 = bias_variable([256], name='b_loc2')
-    h_loc2 = tf.matmul(h_loc1, W_loc2) + b_loc2
+    h_loc2 = tf.nn.relu(tf.matmul(h_loc1, W_loc2) + b_loc2)
     W_loc3 = weight_variable(initial_value=tf.zeros([256, 6], tf.float32), name='W_loc3')
     b_loc3 = bias_variable(initial_value=[1.0, 0.0, 0.0, 0.0, 1.0, 0.0], name='b_loc3')
     h_loc3 = tf.matmul(h_loc2, W_loc3) + b_loc3
