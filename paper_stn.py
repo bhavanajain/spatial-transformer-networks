@@ -248,7 +248,7 @@ for epoch_i in range(n_epochs):
                                 y:batch_ys
                                 }
                             )
-        print('Iteration: ' + str(iter_i) + ' Loss: ' + str(loss))
+            print('Iteration: ' + str(iter_i) + ' Loss: ' + str(loss))
 
         sess.run(
                     optimizer, 
