@@ -30,10 +30,10 @@ else:
 
 y = tf.placeholder(tf.float32, [None, 10])
 
-X_train = X[:10000] 
-y_train = labels[:10000] 
-X_valid = X[10000:11000] 
-y_valid = labels[10000:11000]
+X_train = X[:60000] 
+y_train = labels[:60000] 
+X_valid = X[60000:61000] 
+y_valid = labels[60000:61000]
 
 Y_train = dense_to_one_hot(y_train, n_classes=10)
 Y_valid = dense_to_one_hot(y_valid, n_classes=10) 
@@ -88,10 +88,7 @@ if classifier_arch == 'CNN':
                 )
     W_clsfr_4 = weight_variable([1024, 10], name='W_clsfr_4')
     b_clsfr_4 = bias_variable([10], name='b_clsfr_4')
-    y_logits = tf.nn.relu(
-                    tf.matmul(h_clsfr_1, W_clsfr_4) 
-                    + b_clsfr_4
-                )
+    y_logits = tf.matmul(h_clsfr_1, W_clsfr_4) + b_clsfr_4
     clsfr_weights=[W_clsfr_1, W_clsfr_2, W_clsfr_3, W_clsfr_4]
     clsfr_biases=[b_clsfr_1, b_clsfr_2, b_clsfr_3, b_clsfr_4]
 
@@ -108,20 +105,18 @@ elif classifier_arch == 'FCN':
                 )
     W_clsfr_3 = weight_variable([256, 10], name='W_clsfr_3')
     b_clsfr_3 = bias_variable([10], name='b_clsfr_3')
-    y_logits  = tf.nn.relu(
-                    tf.matmul(h_clsfr_2, W_clsfr_3) + b_clsfr_3
-                )
+    y_logits  = tf.matmul(h_clsfr_2, W_clsfr_3) + b_clsfr_3
     clsfr_weights=[W_clsfr_1, W_clsfr_2, W_clsfr_3]
     clsfr_biases=[b_clsfr_1, b_clsfr_2, b_clsfr_3]
 
 beta = ARGS.BETA
 if ARGS.REG == 'L1':
-    regularizer = tf.contrib.layers.l1_regularizer(scale=beta, scope=None)
+    regularizer = tf.contrib.layers.l1_regularizer(scale=beta)
 elif ARGS.REG == 'L2':
-    regularizer = tf.contrib.layers.l2_regularizer(scale=beta, scope=None)
+    regularizer = tf.contrib.layers.l2_regularizer(scale=beta)
 
 reg_weights = clsfr_weights
-if ARGS.REG=='None':
+if ARGS.REG == 'None':
     reg_penalty = 0
 else:
     reg_penalty = tf.contrib.layers.apply_regularization(regularizer, reg_weights)
@@ -131,7 +126,7 @@ cross_entropy = tf.reduce_mean(
                 )
 learning_rate = ARGS.LEARNING_RATE
 opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
-optimizer = opt.minimize(cross_entropy + reg_penalty)
+optimizer = opt.minimize(cross_entropy + reg_penalty, var_list = clsfr_weights + clsfr_biases)
 
 mem_fraction = ARGS.GPU_FRAC
 if mem_fraction == -1:
@@ -140,12 +135,15 @@ else:
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=ARGS.GPU_FRAC)
     sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
-sess.run(global_variables_initializer())
+correct_prediction = tf.equal(tf.argmax(y_logits, 1), tf.argmax(y, 1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
+
+sess.run(tf.global_variables_initializer())
 
 iter_per_epoch=100
 n_epochs=ARGS.N_EPOCHS
 
-indices=np.linspace(0, 10000-1, iter_per_epoch)
+indices=np.linspace(0, 60000-1, iter_per_epoch)
 indices=indices.astype('int')
 
 model_save = ARGS.MODEL_SAVE
@@ -194,7 +192,7 @@ for epoch_i in range(n_epochs):
                         }
                     )
     if model_save == 'all':
-        saver.save(sess, model_path + "epoch-%03d-%s" % (epoch_i, str(acc)))
+        saver.save(sess, model_dir + "epoch-%03d-%s" % (epoch_i, str(acc)))
     elif model_save == 'best' and acc > prev_acc:
             saver.save(sess, model_path + "epoch-%03d-%s" % (epoch_i, str(acc)))
             prev_acc = acc

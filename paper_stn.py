@@ -102,8 +102,8 @@ elif stn_arch == 'FCN':
     W_loc2 = weight_variable([1024, 256], name='W_loc2')
     b_loc2 = bias_variable([256], name='b_loc2')
     h_loc2 = tf.nn.relu(tf.matmul(h_loc1, W_loc2) + b_loc2)
-    W_loc3 = weight_variable(initial_value=tf.zeros([256, 6], tf.float32), name='W_loc3')
-    b_loc3 = bias_variable(initial_value=[1.0, 0.0, 0.0, 0.0, 1.0, 0.0], name='b_loc3')
+    W_loc3 = tf.Variable(initial_value=tf.zeros([256, 6], tf.float32), name='W_loc3')
+    b_loc3 = tf.Variable(initial_value=[1.0, 0.0, 0.0, 0.0, 1.0, 0.0], name='b_loc3')
     h_loc3 = tf.matmul(h_loc2, W_loc3) + b_loc3
 
     x_tensor = tf.reshape(x, [-1, 42, 42, 1])
@@ -197,7 +197,7 @@ if ARGS.PRETRAINED:
 else:
     reg_weights=stn_weights + clsfr_weights
 
-if ARGS.REG=='None':
+if ARGS.REG=='None' or len(reg_weights) == 0:
     reg_penalty=0
 else:
     reg_penalty=tf.contrib.layers.apply_regularization(regularizer, reg_weights)
